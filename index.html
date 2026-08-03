@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Salon Paul — quelle coupe ?</title>
+<meta name="description" content="Des propositions, des duels, un verdict. À toi de choisir.">
+
+<!-- Pour l'aperçu du lien dans WhatsApp, remplace par ton URL absolue GitHub Pages -->
+<!-- <meta property="og:image" content="https://TON-COMPTE.github.io/TON-DEPOT/images/coupe-01.webp"> -->
+<meta property="og:title" content="Salon Paul — quelle coupe ?">
+<meta property="og:description" content="Des propositions, des duels, un verdict.">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=DM+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --porcelaine:#F1F3EF;
+  --encre:#131A17;
+  --menthe:#4E8F76;
+  --menthe-pale:#CFE0D6;
+  --chrome:#A8AFAC;
+  --chrome-pale:#D8DDDA;
+  --vermillon:#B8352C;
+
+  --signage:'Oswald', 'Haettenschweiler', sans-serif;
+  --texte:'DM Sans', system-ui, sans-serif;
+  --recu:'IBM Plex Mono', ui-monospace, monospace;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--porcelaine);
+  color:var(--encre);
+  font-family:var(--texte);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 22%}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+:focus-visible{outline:2px solid var(--vermillon);outline-offset:3px}
+
+/* ---------- structure des écrans ---------- */
+.ecran{display:none;min-height:100dvh;padding:22px 16px calc(22px + env(safe-area-inset-bottom))}
+.ecran[data-actif]{display:flex;flex-direction:column}
+.enveloppe{width:100%;max-width:560px;margin:0 auto;flex:1;display:flex;flex-direction:column}
+
+/* ---------- typo partagée ---------- */
+.eyebrow{
+  font-family:var(--recu);font-size:11px;font-weight:500;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--menthe);
+}
+.titre{
+  font-family:var(--signage);font-weight:600;text-transform:uppercase;
+  line-height:.92;letter-spacing:.005em;font-size:clamp(38px,11.5vw,60px);
+}
+.chapo{font-size:15px;line-height:1.5;color:#3C4844;max-width:34ch}
+
+/* ---------- accueil : la planche de coupes ---------- */
+.entete{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--encre);padding-bottom:8px}
+.accroche{margin:26px 0 10px}
+.planche{
+  margin:22px 0;border:1px solid var(--chrome);background:#fff;
+  padding:7px;display:grid;grid-template-columns:repeat(5,1fr);gap:5px;
+}
+.vignette{position:relative;aspect-ratio:3/4;background:var(--chrome-pale);overflow:hidden}
+.vignette img{opacity:0;filter:grayscale(1);transition:opacity .5s ease, filter .7s ease}
+.vignette[data-prete] img{opacity:1;filter:grayscale(0)}
+.vignette::after{
+  content:attr(data-num);position:absolute;left:3px;bottom:2px;
+  font-family:var(--recu);font-size:9px;color:#fff;
+  text-shadow:0 0 3px rgba(0,0,0,.75);
+}
+.vignette[data-absente]{display:grid;place-items:center}
+.vignette[data-absente]::before{content:attr(data-num);font-family:var(--signage);font-size:15px;color:#7E8784}
+
+.socle{margin-top:auto;display:flex;flex-direction:column;gap:10px}
+.champ{
+  width:100%;padding:15px 14px;background:#fff;
+  border:1px solid var(--chrome);border-radius:0;
+  font-family:var(--recu);font-size:15px;letter-spacing:.04em;
+}
+.champ::placeholder{color:#9AA29F;text-transform:uppercase;font-size:12px;letter-spacing:.14em}
+.bouton{
+  width:100%;padding:17px;background:var(--encre);color:var(--porcelaine);
+  font-family:var(--recu);font-weight:500;font-size:13px;
+  letter-spacing:.2em;text-transform:uppercase;transition:background .2s;
+}
+.bouton:hover:not(:disabled){background:var(--menthe)}
+.bouton:disabled{background:var(--chrome);cursor:progress}
+.bouton--fantome{background:none;color:var(--encre);border:1px solid var(--chrome)}
+.bouton--fantome:hover{background:var(--encre);color:var(--porcelaine)}
+
+/* ---------- duel ---------- */
+.barre-tour{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.jauge{display:flex;gap:2px;margin:12px 0 18px;height:5px}
+.tick{flex:1;background:var(--chrome-pale)}
+.tick[data-fait]{background:var(--encre)}
+.tick[data-encours]{background:var(--vermillon)}
+
+.arene{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+.plaque{position:relative;padding:0;display:block;width:100%;border:1px solid var(--chrome);background:#fff;transition:transform .12s ease, border-color .12s ease}
+.plaque:hover,.plaque:focus-visible{border-color:var(--encre);transform:translateY(-3px)}
+.plaque:active{transform:translateY(0)}
+.plaque .cadre{aspect-ratio:3/4;overflow:hidden;background:var(--chrome-pale)}
+.plaque[data-absente] .cadre{display:grid;place-items:center}
+.plaque[data-absente] .cadre::before{content:attr(data-num);font-family:var(--signage);font-size:34px;color:#7E8784}
+.plaque .pied{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:9px 10px;font-family:var(--recu);font-size:11px;letter-spacing:.1em;
+  border-top:1px solid var(--chrome-pale);
+}
+.loupe{
+  position:absolute;top:6px;right:6px;width:30px;height:30px;
+  background:rgba(19,26,23,.72);color:#fff;font-size:13px;line-height:30px;text-align:center;
+}
+.ou{
+  text-align:center;font-family:var(--signage);text-transform:uppercase;
+  font-size:13px;letter-spacing:.3em;color:var(--chrome);margin:16px 0 0;
+}
+.aide{margin-top:auto;padding-top:16px;font-family:var(--recu);font-size:10px;letter-spacing:.12em;color:var(--chrome);text-transform:uppercase;text-align:center}
+
+/* ---------- verdict : le bon pour une coupe ---------- */
+.ticket{
+  background:#fff;border:1px solid var(--chrome);
+  box-shadow:0 14px 34px rgba(19,26,23,.09);
+  margin:8px 0 18px;
+}
+.ticket-bande{background:var(--menthe);height:10px}
+.ticket-corps{padding:22px 20px 26px}
+.ticket-entete{text-align:center;border-bottom:1px dashed var(--chrome);padding-bottom:16px}
+.ticket-nom{font-family:var(--signage);font-weight:600;text-transform:uppercase;font-size:clamp(28px,8vw,40px);line-height:1;margin-top:6px}
+.podium-or{margin:20px auto 0;max-width:250px;border:1px solid var(--encre)}
+.podium-or .cadre{aspect-ratio:3/4;overflow:hidden;background:var(--chrome-pale);display:grid;place-items:center}
+.podium-or[data-absente] .cadre::before{content:attr(data-num);font-family:var(--signage);font-size:44px;color:#7E8784}
+.rang{font-family:var(--recu);font-size:11px;letter-spacing:.16em;text-transform:uppercase;text-align:center;margin-top:9px}
+.rang b{font-family:var(--signage);font-weight:600;font-size:19px;letter-spacing:.02em;display:block;margin-top:2px}
+.dauphins{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px;padding-top:20px;border-top:1px dashed var(--chrome)}
+.dauphins[data-solo]{grid-template-columns:1fr;max-width:250px;margin-left:auto;margin-right:auto}
+.dauphin{border:1px solid var(--chrome)}
+.dauphin .cadre{aspect-ratio:3/4;overflow:hidden;background:var(--chrome-pale);display:grid;place-items:center}
+.dauphin[data-absente] .cadre::before{content:attr(data-num);font-family:var(--signage);font-size:26px;color:#7E8784}
+.ticket-pied{
+  margin-top:22px;padding-top:14px;border-top:1px solid var(--chrome-pale);
+  display:flex;justify-content:space-between;font-family:var(--recu);font-size:10px;
+  letter-spacing:.1em;color:#7E8784;text-transform:uppercase;
+}
+.actions{display:flex;flex-direction:column;gap:9px;margin-top:auto}
+
+/* ---------- repli export : image affichée en clair si le téléchargement échoue ---------- */
+.repli-export{display:none;margin-top:14px;border:1px solid var(--chrome);background:#fff}
+.repli-export[data-actif]{display:block}
+.repli-export img{width:100%;height:auto;object-fit:contain}
+.repli-consigne{text-align:center;font-family:var(--recu);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#7E8784;padding:10px}
+
+/* ---------- zoom plein écran ---------- */
+.zoom{
+  position:fixed;inset:0;background:rgba(19,26,23,.94);z-index:50;
+  display:none;place-items:center;padding:20px;
+}
+.zoom[data-actif]{display:grid}
+.zoom img{max-width:100%;max-height:88dvh;width:auto;height:auto;object-fit:contain}
+.zoom-fermer{position:absolute;top:16px;right:18px;color:#fff;font-family:var(--recu);font-size:12px;letter-spacing:.16em}
+
+@media (min-width:620px){
+  .arene{gap:20px}
+  .planche{gap:7px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ ACCUEIL ============ -->
+<section class="ecran" id="ecran-accueil" data-actif>
+  <div class="enveloppe">
+    <header class="entete">
+      <span class="eyebrow">Salon Paul</span>
+      <span class="eyebrow" id="compteur-charge">Chargement…</span>
+    </header>
+
+    <div class="accroche">
+      <h1 class="titre">Quelle coupe<br>pour Paul&nbsp;?</h1>
+    </div>
+    <p class="chapo">Des propositions sur la planche. Des duels. Tu choisis à chaque fois celle que tu préfères, et le tableau désigne ton verdict.</p>
+
+    <div class="planche" id="planche" aria-hidden="true"></div>
+
+    <div class="socle">
+      <input class="champ" id="prenom" type="text" placeholder="Ton prénom" autocomplete="given-name" maxlength="14">
+      <button class="bouton" id="btn-demarrer" disabled>Chargement des coupes…</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DUEL ============ -->
+<section class="ecran" id="ecran-duel">
+  <div class="enveloppe">
+    <div class="barre-tour">
+      <span class="eyebrow" id="nom-tour">Tour préliminaire</span>
+      <span class="eyebrow" id="compteur-duel" style="color:var(--chrome)">Duel 01</span>
+    </div>
+    <div class="jauge" id="jauge"></div>
+
+    <div class="arene">
+      <button class="plaque" id="plaque-a">
+        <span class="cadre"><img id="img-a" alt="Proposition de gauche"></span>
+        <span class="pied"><span id="num-a">N°01</span><span>choisir</span></span>
+        <span class="loupe" id="loupe-a" role="button" tabindex="0" aria-label="Agrandir">⤢</span>
+      </button>
+      <button class="plaque" id="plaque-b">
+        <span class="cadre"><img id="img-b" alt="Proposition de droite"></span>
+        <span class="pied"><span id="num-b">N°02</span><span>choisir</span></span>
+        <span class="loupe" id="loupe-b" role="button" tabindex="0" aria-label="Agrandir">⤢</span>
+      </button>
+    </div>
+    <p class="ou">ou</p>
+    <p class="aide">Touche une coupe pour voter · flèches ← → au clavier</p>
+  </div>
+</section>
+
+<!-- ============ VERDICT ============ -->
+<section class="ecran" id="ecran-verdict">
+  <div class="enveloppe">
+    <div class="ticket">
+      <div class="ticket-bande"></div>
+      <div class="ticket-corps">
+        <div class="ticket-entete">
+          <span class="eyebrow">Bon pour une coupe</span>
+          <p class="ticket-nom" id="verdict-nom">Le verdict</p>
+        </div>
+
+        <div class="podium-or" id="or"><span class="cadre"><img id="img-or" alt="Coupe gagnante"></span></div>
+        <p class="rang"><span style="color:var(--menthe)">Vainqueur</span><b id="lbl-or">N°07</b></p>
+
+        <div class="dauphins" id="dauphins">
+          <div id="bloc-argent">
+            <div class="dauphin" id="argent"><span class="cadre"><img id="img-argent" alt="Deuxième"></span></div>
+            <p class="rang">Deuxième<b id="lbl-argent">N°12</b></p>
+          </div>
+          <div id="bloc-bronze">
+            <div class="dauphin" id="bronze"><span class="cadre"><img id="img-bronze" alt="Troisième"></span></div>
+            <p class="rang">Troisième<b id="lbl-bronze">N°03</b></p>
+          </div>
+        </div>
+
+        <div class="ticket-pied">
+          <span id="verdict-date">—</span><span id="verdict-duels">— duels</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="bouton" id="btn-partager" disabled>Préparation de l'image…</button>
+      <button class="bouton bouton--fantome" id="btn-rejouer">Refaire un tournoi</button>
+    </div>
+
+    <div class="repli-export" id="repli-export">
+      <img id="img-repli-export" alt="Ton verdict, à enregistrer manuellement">
+      <p class="repli-consigne">Appuie longuement sur l'image pour l'enregistrer</p>
+    </div>
+  </div>
+</section>
+
+<div class="zoom" id="zoom"><span class="zoom-fermer">Fermer ✕</span><img id="img-zoom" alt=""></div>
+
+<script>
+/* ════════════════════════════════════════════════════════
+   CONFIG — la seule zone à éditer
+   ════════════════════════════════════════════════════════ */
+const CONFIG = {
+  dossier: 'images/',
+  manifeste: 'images/manifest.json',
+  // Repli utilisé si le manifeste est absent ou illisible.
+  replisFichiers: Array.from({ length: 20 }, (_, i) => 'coupe-' + String(i + 1).padStart(2, '0') + '.webp')
+};
+
+/* ════════════════════════════════════════════════════════
+   Chargement du manifeste + préchargement
+   ════════════════════════════════════════════════════════ */
+const $ = s => document.querySelector(s);
+
+async function chargerListeFichiers() {
+  try {
+    const reponse = await fetch(CONFIG.manifeste, { cache: 'no-store' });
+    if (!reponse.ok) throw new Error('manifeste illisible');
+    const donnees = await reponse.json();
+    const props = donnees && donnees.propositions;
+    if (!Array.isArray(props) || props.length === 0) throw new Error('manifeste vide');
+    return props.map(p => p.fichier);
+  } catch (e) {
+    return CONFIG.replisFichiers;
+  }
+}
+
+let propositions = [];
+const planche = $('#planche');
+let charges = 0;
+
+function construirePlanche() {
+  propositions.forEach(p => {
+    const v = document.createElement('div');
+    v.className = 'vignette';
+    v.dataset.num = p.num;
+    const im = new Image();
+    im.decoding = 'async';
+    im.alt = '';
+    im.onload = () => { p.img = im; v.dataset.prete = ''; resolu(); };
+    im.onerror = () => { p.absente = true; v.dataset.absente = ''; im.remove(); resolu(); };
+    im.src = p.src;
+    v.appendChild(im);
+    planche.appendChild(v);
+  });
+}
+
+function resolu() {
+  charges++;
+  $('#compteur-charge').textContent = String(charges).padStart(2, '0') + '/' + propositions.length;
+  if (charges === propositions.length) {
+    const b = $('#btn-demarrer');
+    b.disabled = false;
+    b.textContent = 'Démarrer le vote';
+  }
+}
+
+(async function demarrer() {
+  const fichiers = await chargerListeFichiers();
+  propositions = fichiers.map((f, i) => ({
+    id: i,
+    num: 'N°' + String(i + 1).padStart(2, '0'),
+    src: CONFIG.dossier + f,
+    img: null,
+    absente: false
+  }));
+  $('#compteur-charge').textContent = '00/' + propositions.length;
+  construirePlanche();
+})();
+
+/* ════════════════════════════════════════════════════════
+   Moteur de tournoi à élimination directe
+   ════════════════════════════════════════════════════════ */
+function melanger(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Répartit un effectif quelconque : exemptés + duels, pour retomber
+// sur la puissance de 2 immédiatement inférieure.
+function creerTour(pool) {
+  const n = pool.length;
+  let p = 1; while (p * 2 <= n) p *= 2;
+  const nbDuels = (n === p) ? n / 2 : n - p;
+  const nbExempts = n - nbDuels * 2;
+  const duels = [];
+  const joueurs = pool.slice(nbExempts);
+  for (let i = 0; i < joueurs.length; i += 2) duels.push([joueurs[i], joueurs[i + 1]]);
+  return { exempts: pool.slice(0, nbExempts), duels };
+}
+
+function nommerTour(taille) {
+  if (taille > 16) return 'Tour préliminaire';
+  if (taille === 16) return 'Huitièmes de finale';
+  if (taille === 8) return 'Quarts de finale';
+  if (taille === 4) return 'Demi-finales';
+  if (taille === 2) return 'Finale';
+  return 'Tour';
+}
+
+function totalDuels(n) {
+  let t = 0, pool = Array.from({ length: n }, (_, i) => i);
+  while (pool.length > 1) {
+    const { exempts, duels } = creerTour(pool);
+    t += duels.length;
+    pool = exempts.concat(duels.map(d => d[0]));
+  }
+  return t + (n >= 4 ? 1 : 0); // + petite finale
+}
+
+let partie = null;
+
+function nouvellePartie() {
+  const pool = melanger(propositions.slice());
+  partie = {
+    pool, tour: null, vainqueurs: [], index: 0,
+    perdantsDemi: [], finaliste: null, or: null, argent: null, bronze: null,
+    duelCourant: 0, total: totalDuels(propositions.length), phase: 'bracket'
+  };
+  construireJauge(partie.total);
+  demarrerTour(pool);
+  afficherDuel();
+}
+
+function demarrerTour(pool) {
+  partie.tour = creerTour(pool);
+  partie.tailleTour = pool.length;
+  partie.vainqueurs = partie.tour.exempts.slice();
+  partie.index = 0;
+}
+
+function voter(gagnantIndex) {
+  const duel = duelActuel();
+  const gagnant = duel[gagnantIndex], perdant = duel[1 - gagnantIndex];
+
+  if (partie.phase === 'petite-finale') {
+    partie.bronze = gagnant;
+    return afficherVerdict();
+  }
+
+  partie.vainqueurs.push(gagnant);
+  if (partie.tailleTour === 4) partie.perdantsDemi.push(perdant);
+  if (partie.tailleTour === 2) { partie.or = gagnant; partie.argent = perdant; }
+
+  partie.index++;
+  partie.duelCourant++;
+
+  if (partie.index < partie.tour.duels.length) return afficherDuel();
+
+  if (partie.vainqueurs.length === 1) {
+    if (partie.perdantsDemi.length === 2) {
+      partie.phase = 'petite-finale';
+      return afficherDuel();
+    }
+    return afficherVerdict();
+  }
+  demarrerTour(partie.vainqueurs);
+  afficherDuel();
+}
+
+function duelActuel() {
+  return partie.phase === 'petite-finale' ? partie.perdantsDemi : partie.tour.duels[partie.index];
+}
+
+/* ════════════════════════════════════════════════════════
+   Rendu
+   ════════════════════════════════════════════════════════ */
+function montrer(id) {
+  document.querySelectorAll('.ecran').forEach(e => e.removeAttribute('data-actif'));
+  $('#' + id).setAttribute('data-actif', '');
+  window.scrollTo(0, 0);
+}
+
+function construireJauge(n) {
+  $('#jauge').innerHTML = Array.from({ length: n }, () => '<span class="tick"></span>').join('');
+}
+
+function peindre(plaque, imgEl, numEl, p) {
+  numEl.textContent = p.num;
+  plaque.querySelector('.cadre').dataset.num = p.num;
+  if (p.absente) { plaque.dataset.absente = ''; imgEl.removeAttribute('src'); }
+  else { delete plaque.dataset.absente; imgEl.src = p.src; imgEl.alt = 'Coupe ' + p.num; }
+}
+
+function afficherDuel() {
+  const [a, b] = duelActuel();
+  $('#nom-tour').textContent = partie.phase === 'petite-finale' ? 'Petite finale' : nommerTour(partie.tailleTour);
+  $('#compteur-duel').textContent = 'Duel ' + String(partie.duelCourant + 1).padStart(2, '0') + '/' + partie.total;
+  document.querySelectorAll('.tick').forEach((t, i) => {
+    t.removeAttribute('data-fait'); t.removeAttribute('data-encours');
+    if (i < partie.duelCourant) t.dataset.fait = '';
+    if (i === partie.duelCourant) t.dataset.encours = '';
+  });
+  peindre($('#plaque-a'), $('#img-a'), $('#num-a'), a);
+  peindre($('#plaque-b'), $('#img-b'), $('#num-b'), b);
+  montrer('ecran-duel');
+}
+
+let blobVerdict = null;
+
+function afficherVerdict() {
+  const prenom = ($('#prenom').value || '').trim();
+  $('#verdict-nom').textContent = prenom ? 'Le choix de ' + prenom : 'Le verdict';
+  $('#verdict-date').textContent = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+  $('#verdict-duels').textContent = partie.total + ' duels';
+
+  [['or', partie.or], ['argent', partie.argent], ['bronze', partie.bronze]].forEach(([cle, p]) => {
+    if (!p) return;
+    const bloc = $('#' + cle), im = $('#img-' + cle);
+    bloc.querySelector('.cadre').dataset.num = p.num;
+    $('#lbl-' + cle).textContent = p.num;
+    if (p.absente) { bloc.dataset.absente = ''; im.removeAttribute('src'); }
+    else { delete bloc.dataset.absente; im.src = p.src; }
+  });
+
+  // Moins de 4 partants : pas de petite finale, donc pas de 3e place.
+  const aBronze = !!partie.bronze;
+  $('#bloc-bronze').style.display = aBronze ? '' : 'none';
+  if (aBronze) $('#dauphins').removeAttribute('data-solo');
+  else $('#dauphins').setAttribute('data-solo', '');
+
+  $('#btn-partager').disabled = true;
+  $('#btn-partager').textContent = "Préparation de l'image…";
+  $('#repli-export').removeAttribute('data-actif');
+
+  montrer('ecran-verdict');
+  preparerImage(prenom); // on génère le PNG tout de suite : le clic partage doit rester synchrone
+}
+
+/* ════════════════════════════════════════════════════════
+   Génération du PNG partageable (1080 × 1500)
+   ════════════════════════════════════════════════════════ */
+function couvrir(ctx, p, x, y, w, h) {
+  ctx.save();
+  ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+  if (p && p.img) {
+    const iw = p.img.naturalWidth, ih = p.img.naturalHeight;
+    const rd = w / h, ri = iw / ih;
+    let sw, sh, sx, sy;
+    if (ri > rd) { sh = ih; sw = sh * rd; sx = (iw - sw) / 2; sy = 0; }
+    else { sw = iw; sh = sw / rd; sx = 0; sy = (ih - sh) * 0.22; }
+    ctx.drawImage(p.img, sx, sy, sw, sh, x, y, w, h);
+  } else {
+    ctx.fillStyle = '#D8DDDA'; ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = '#7E8784'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = '600 ' + Math.round(w / 4) + 'px Oswald, sans-serif';
+    ctx.fillText(p ? p.num : '—', x + w / 2, y + h / 2);
+  }
+  ctx.restore();
+  ctx.strokeStyle = '#131A17'; ctx.lineWidth = 2; ctx.strokeRect(x, y, w, h);
+}
+
+async function preparerImage(prenom) {
+  blobVerdict = null;
+  try { await document.fonts.ready; } catch (e) {}
+  const c = document.createElement('canvas');
+  c.width = 1080; c.height = 1500;
+  const x = c.getContext('2d');
+
+  x.fillStyle = '#F1F3EF'; x.fillRect(0, 0, 1080, 1500);
+  x.fillStyle = '#4E8F76'; x.fillRect(0, 0, 1080, 16); x.fillRect(0, 1484, 1080, 16);
+
+  x.textAlign = 'center';
+  try { x.letterSpacing = '5px'; } catch (e) {}
+  x.fillStyle = '#4E8F76'; x.font = '500 24px "IBM Plex Mono", monospace';
+  x.fillText('BON POUR UNE COUPE', 540, 108);
+  try { x.letterSpacing = '0px'; } catch (e) {}
+
+  x.fillStyle = '#131A17'; x.font = '600 74px Oswald, sans-serif';
+  x.fillText((prenom ? 'LE CHOIX DE ' + prenom : 'LE VERDICT').toUpperCase(), 540, 196);
+
+  couvrir(x, partie.or, 280, 240, 520, 650);
+
+  x.fillStyle = '#4E8F76'; x.font = '500 22px "IBM Plex Mono", monospace';
+  x.fillText('VAINQUEUR', 540, 936);
+  x.fillStyle = '#131A17'; x.font = '600 52px Oswald, sans-serif';
+  x.fillText(partie.or ? partie.or.num : '', 540, 992);
+
+  x.strokeStyle = '#A8AFAC'; x.lineWidth = 2; x.setLineDash([9, 9]);
+  x.beginPath(); x.moveTo(120, 1032); x.lineTo(960, 1032); x.stroke(); x.setLineDash([]);
+
+  if (partie.bronze) {
+    couvrir(x, partie.argent, 250, 1074, 260, 325);
+    couvrir(x, partie.bronze, 570, 1074, 260, 325);
+    x.fillStyle = '#7E8784'; x.font = '400 19px "IBM Plex Mono", monospace';
+    x.fillText('2e', 380, 1432); x.fillText('3e', 700, 1432);
+    x.fillStyle = '#131A17'; x.font = '600 30px Oswald, sans-serif';
+    x.fillText(partie.argent ? partie.argent.num : '', 380, 1464);
+    x.fillText(partie.bronze ? partie.bronze.num : '', 700, 1464);
+  } else {
+    couvrir(x, partie.argent, 410, 1074, 260, 325);
+    x.fillStyle = '#7E8784'; x.font = '400 19px "IBM Plex Mono", monospace';
+    x.fillText('2e', 540, 1432);
+    x.fillStyle = '#131A17'; x.font = '600 30px Oswald, sans-serif';
+    x.fillText(partie.argent ? partie.argent.num : '', 540, 1464);
+  }
+
+  await new Promise(r => c.toBlob(b => { blobVerdict = b; r(); }, 'image/png'));
+
+  const btn = $('#btn-partager');
+  btn.disabled = false;
+  btn.textContent = 'Envoyer le verdict à Paul';
+}
+
+$('#btn-partager').addEventListener('click', async () => {
+  if (!blobVerdict) return;
+  const prenom = ($('#prenom').value || 'verdict').trim().toLowerCase().replace(/[^a-z0-9]/g, '') || 'verdict';
+  const fichier = new File([blobVerdict], 'coupe-' + prenom + '.png', { type: 'image/png' });
+  const texte = 'Voilà la coupe que tu dois te faire. ' + (partie.or ? partie.or.num : '');
+  const btn = $('#btn-partager');
+
+  // 1. Partage natif — téléphones, HTTPS uniquement.
+  if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
+    try {
+      await navigator.share({ files: [fichier], text: texte });
+      btn.textContent = 'Verdict envoyé';
+      setTimeout(() => { btn.textContent = 'Envoyer le verdict à Paul'; }, 2500);
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return; // annulation = pas une erreur
+      // sinon on continue vers les replis ci-dessous
+    }
+  }
+
+  // 2. Téléchargement — desktop.
+  try {
+    const url = URL.createObjectURL(blobVerdict);
+    const a = document.createElement('a');
+    a.href = url; a.download = fichier.name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    btn.textContent = 'Image enregistrée';
+    setTimeout(() => { btn.textContent = 'Envoyer le verdict à Paul'; }, 2500);
+    return;
+  } catch (e) {
+    // 3. Téléchargement bloqué (iframe sandboxée, webview restrictif) : afficher l'image en clair.
+    const im = $('#img-repli-export');
+    im.src = URL.createObjectURL(blobVerdict);
+    $('#repli-export').setAttribute('data-actif', '');
+    btn.textContent = 'Enregistre l’image ci-dessous';
+    setTimeout(() => { btn.textContent = 'Envoyer le verdict à Paul'; }, 3500);
+  }
+});
+
+/* ════════════════════════════════════════════════════════
+   Interactions
+   ════════════════════════════════════════════════════════ */
+$('#btn-demarrer').addEventListener('click', nouvellePartie);
+$('#btn-rejouer').addEventListener('click', nouvellePartie);
+$('#plaque-a').addEventListener('click', () => voter(0));
+$('#plaque-b').addEventListener('click', () => voter(1));
+
+document.addEventListener('keydown', e => {
+  if (!$('#ecran-duel').hasAttribute('data-actif')) return;
+  if ($('#zoom').hasAttribute('data-actif')) { if (e.key === 'Escape') fermerZoom(); return; }
+  if (e.key === 'ArrowLeft') voter(0);
+  if (e.key === 'ArrowRight') voter(1);
+});
+
+function ouvrirZoom(p) {
+  if (p.absente) return;
+  $('#img-zoom').src = p.src;
+  $('#zoom').setAttribute('data-actif', '');
+}
+function fermerZoom() { $('#zoom').removeAttribute('data-actif'); }
+$('#zoom').addEventListener('click', fermerZoom);
+['a', 'b'].forEach((cle, i) => {
+  $('#loupe-' + cle).addEventListener('click', e => { e.stopPropagation(); ouvrirZoom(duelActuel()[i]); });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+# Photos brutes de Paul : lourdes, ne doivent pas entrer dans le dépôt.
+photos-source/*.jpg
+photos-source/*.jpeg
+photos-source/*.JPG
+photos-source/*.JPEG
+photos-source/*.png
+photos-source/*.PNG
+photos-source/*.heic
+photos-source/*.HEIC
+!photos-source/.gitkeep
+
+.DS_Store
